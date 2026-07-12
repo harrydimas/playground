@@ -1,0 +1,201 @@
+### Health Check
+GET http://localhost:3000/health
+Accept: application/json
+
+###
+
+### Search: Live cattle for breeding (Indonesian query)
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "sapi hidup untuk breeding"
+}
+
+###
+
+### Search: Live cattle for breeding (English query)
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "live cattle for breeding"
+}
+
+###
+
+### Search: Bag filter with specs
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "BAG:FLTR;600 X 592 X 592 MM"
+}
+
+###
+
+### Search: Pump spare without motor
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "PUMP;SPARE,WO MOT"
+}
+
+###
+
+### Search: Fan assembly
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "ASSEMBLY;FAN"
+}
+
+###
+
+### Search: Gearbox reducer for AG-7102
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "GEARBOX;RDCR,F/ AG-7102"
+}
+
+###
+
+### Search: Electric motor 2.2 KW
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "MOTOR;LV,2.2 KW,100L,4P,SIMOTICS,155F"
+}
+
+###
+
+### Search: Plate tail liner M1500
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "PLATE;TAIL LNR M1500"
+}
+
+###
+
+### Search: Playstation 5
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "Playstation 5"
+}
+
+###
+
+### Search: Laptop computer
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "laptop computer"
+}
+
+###
+
+### Search: Rice
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "beras"
+}
+
+###
+
+### Search V2: Live cattle for breeding (with section classification)
+POST http://localhost:3000/search/v2
+Content-Type: application/json
+
+{
+  "query": "sapi hidup untuk breeding"
+}
+
+###
+
+### Search V2: Bag filter with specs
+POST http://localhost:3000/search/v2
+Content-Type: application/json
+
+{
+  "query": "BAG:FLTR;600 X 592 X 592 MM"
+}
+
+###
+
+### Search V2: Fan assembly
+POST http://localhost:3000/search/v2
+Content-Type: application/json
+
+{
+  "query": "ASSEMBLY;FAN"
+}
+
+###
+
+### Search V2: Laptop computer
+POST http://localhost:3000/search/v2
+Content-Type: application/json
+
+{
+  "query": "laptop computer"
+}
+
+### Search V2: LIGHT;RR
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": "RECTIFIER;CLAMP. DISCK 5SAC18V7021"
+}
+
+###
+
+### Error: Missing query field
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "foo": "bar"
+}
+
+###
+
+### Error: Empty query
+POST http://localhost:3000/search
+Content-Type: application/json
+
+{
+  "query": ""
+}
+
+###
+
+### Error: Invalid JSON body
+POST http://localhost:3000/search
+Content-Type: application/json
+
+not-json
+
+###
+
+### 404: Unknown route
+GET http://localhost:3000/unknown
+Accept: application/json
+
+###
+
+### 404: Wrong method on /search
+GET http://localhost:3000/search
+Accept: application/json
