@@ -1,18 +1,18 @@
-import { llmChat } from "../llm.js";
-import type { EnrichedQuery } from "../types.js";
+import { llmChat } from '../llm.js';
+import type { EnrichedQuery } from '../types.js';
 
 export function stripNoise(text: string): string {
   return text
-    .replace(/\d+\s*[xX×]\s*\d+(\s*[xX×]\s*\d+)?\s*(MM|CM|M|IN)?/gi, "")
-    .replace(/\b\d+(\.\d+)?\s*(KW|HP|W|MM|CM|M|KG|G|L|ML|V|A|HZ|RPM|KV|KVA|BAR|PSI|IN)\b/gi, "")
-    .replace(/\b\d+(\.\d+)?\s*(OD|ID|THK|DIA|LG|OAH|MAX|MIN)\b/gi, "")
-    .replace(/\b[A-Z]+\d+[-]?\d*[A-Z0-9]*[-]?\d*[A-Z0-9]*\b/g, "")
-    .replace(/\b[A-Z]{2,6}\s+\d+[A-Z0-9-]+/g, "")
-    .replace(/\b\d+\s*\/\s*\d+("|IN)?/g, "")
-    .replace(/\b\d+(\.\d+)?\s*(IN|MM|CM|M|FT|KG|LB)\b/gi, "")
-    .replace(/[;:,\/()]/g, " ")
-    .replace(/"/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/\d+\s*[xX×]\s*\d+(\s*[xX×]\s*\d+)?\s*(MM|CM|M|IN)?/gi, '')
+    .replace(/\b\d+(\.\d+)?\s*(KW|HP|W|MM|CM|M|KG|G|L|ML|V|A|HZ|RPM|KV|KVA|BAR|PSI|IN)\b/gi, '')
+    .replace(/\b\d+(\.\d+)?\s*(OD|ID|THK|DIA|LG|OAH|MAX|MIN)\b/gi, '')
+    .replace(/\b[A-Z]+\d+[-]?\d*[A-Z0-9]*[-]?\d*[A-Z0-9]*\b/g, '')
+    .replace(/\b[A-Z]{2,6}\s+\d+[A-Z0-9-]+/g, '')
+    .replace(/\b\d+\s*\/\s*\d+("|IN)?/g, '')
+    .replace(/\b\d+(\.\d+)?\s*(IN|MM|CM|M|FT|KG|LB)\b/gi, '')
+    .replace(/[;:,\/()]/g, ' ')
+    .replace(/"/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -69,44 +69,51 @@ Output format (exactly, as a JSON object):
 
 function parseEnrichResponse(resp: string) {
   try {
-    const json = resp.replace(/```(?:json)?\s*([\s\S]*?)```/g, "$1").trim();
+    const json = resp.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim();
     return JSON.parse(json) as Record<string, any>;
   } catch {
     return {};
   }
 }
 
-export async function enrichQuery(query: string): Promise<EnrichedQuery> {
+export async function enrichQuery(query: string, option: number = 1): Promise<EnrichedQuery> {
   const cleaned = stripNoise(query);
 
-  // Run enrichment twice in parallel for ensemble suggestedCodes
-  const [resp1, resp2] = await Promise.all([
-    llmChat(cleaned, enrichPrompt),
-    llmChat(cleaned, enrichPrompt),
-  ]);
-
-  console.log("Enrichment run 1:", resp1);
-  console.log("Enrichment run 2:", resp2);
+  // Run enrichment N times in parallel and merge unique codes
+  const runs = Math.max(option, 1);
+  console.log(`Running ${runs}x enrichment`);
+  const responses = await Promise.all(
+    Array.from({ length: runs }, () => llmChat(cleaned, enrichPrompt))
+  );
 
   let translated = cleaned;
-  let explanation = "";
+  let explanation = '';
   let suggestedCodes: string[] = [];
   let synonyms: string[] = [];
 
-  // Parse first response
-  const p1 = parseEnrichResponse(resp1);
-  if (p1.translated) translated = String(p1.translated).trim();
-  if (p1.explanation) explanation = String(p1.explanation).trim();
-  if (Array.isArray(p1.suggestedCodes)) suggestedCodes = p1.suggestedCodes.map((s: any) => String(s).trim()).filter((s: string) => /^\d{4}$/.test(s));
-  if (Array.isArray(p1.synonyms)) synonyms = p1.synonyms.map((s: any) => String(s).trim()).filter(Boolean);
+  for (const resp of responses) {
+    console.log(`Enrichment run response:`, resp);
+    const p = parseEnrichResponse(resp);
 
-  // Merge suggestedCodes from second run
-  const p2 = parseEnrichResponse(resp2);
-  if (Array.isArray(p2.suggestedCodes)) {
-    const codes2 = p2.suggestedCodes.map((s: any) => String(s).trim()).filter((s: string) => /^\d{4}$/.test(s));
-    for (const c of codes2) {
-      if (!suggestedCodes.includes(c)) {
-        suggestedCodes.push(c);
+    // Use first valid response for translated/explanation
+    if (!translated && p.translated) translated = String(p.translated).trim();
+    if (!explanation && p.explanation) explanation = String(p.explanation).trim();
+
+    // Collect unique suggestedCodes from all runs
+    if (Array.isArray(p.suggestedCodes)) {
+      const codes = p.suggestedCodes
+        .map((s: any) => String(s).trim())
+        .filter((s: string) => /^\d{4}$/.test(s));
+      for (const c of codes) {
+        if (!suggestedCodes.includes(c)) suggestedCodes.push(c);
+      }
+    }
+
+    // Collect unique synonyms from all runs
+    if (Array.isArray(p.synonyms)) {
+      const syn = p.synonyms.map((s: any) => String(s).trim()).filter(Boolean);
+      for (const s of syn) {
+        if (!synonyms.includes(s)) synonyms.push(s);
       }
     }
   }

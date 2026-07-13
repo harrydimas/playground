@@ -14,7 +14,9 @@
     "seed-harmonized": "tsx src/db/seed.ts --harmonized",
     "migrate": "tsx src/db/migrate.ts",
     "test-harmonized": "tsx test_queries.ts",
-    "test-bps": "tsx test_bps.ts"
+    "test-bps": "tsx test_bps.ts",
+    "format": "prettier --write \"**/*.{ts,js,json,csv,yml,yaml}\"",
+    "prepare": "husky"
   },
   "dependencies": {
     "csv-parse": "^5.5.3",
@@ -25,6 +27,9 @@
   "devDependencies": {
     "@types/node": "^20.14.0",
     "@types/pg": "^8.11.0",
+    "@types/prettier": "^2.7.3",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.5",
     "tsx": "^4.15.0",
     "typescript": "^5.5.0"
   }

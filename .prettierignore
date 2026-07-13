@@ -1,0 +1,4 @@
+.husky/pre-commit
+node_modules/
+dist/
+*.log
