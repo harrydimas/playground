@@ -12,7 +12,9 @@
     "update-level4": "tsx src/db/seed.ts --update-level4",
     "update-level6": "tsx src/db/seed.ts --update-level6",
     "seed-harmonized": "tsx src/db/seed.ts --harmonized",
-    "migrate": "tsx src/db/migrate.ts"
+    "migrate": "tsx src/db/migrate.ts",
+    "test-harmonized": "tsx test_queries.ts",
+    "test-bps": "tsx test_bps.ts"
   },
   "dependencies": {
     "csv-parse": "^5.5.3",

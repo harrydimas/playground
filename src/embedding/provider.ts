@@ -1,3 +1,4 @@
+import OpenAI from "openai";
 import { config } from "../config.js";
 
 export interface EmbeddingProvider {
@@ -33,6 +34,55 @@ export class OllamaEmbeddingProvider implements EmbeddingProvider {
   }
 }
 
+let _altClient: OpenAI | null = null;
+function getAltClient(): OpenAI {
+  if (!_altClient) {
+    _altClient = new OpenAI({
+      apiKey: config.llmAltApiKey,
+      baseURL: config.llmAltBaseUrl,
+    });
+  }
+  return _altClient;
+}
+
+export class AltEmbeddingProvider implements EmbeddingProvider {
+  async embed(text: string): Promise<number[]> {
+    const client = getAltClient();
+    const resp = await client.embeddings.create({
+      model: config.llmAltEmbedModel,
+      input: text,
+    });
+    const emb = resp.data?.[0]?.embedding;
+    if (!emb || emb.length === 0) {
+      throw new Error(
+        `Alt embedding returned empty vector for model="${config.llmAltEmbedModel}"`
+      );
+    }
+    return emb;
+  }
+
+  async embedBatch(texts: string[]): Promise<number[][]> {
+    const client = getAltClient();
+    const resp = await client.embeddings.create({
+      model: config.llmAltEmbedModel,
+      input: texts,
+    });
+    const byIndex = new Map(resp.data.map(d => [d.index, d.embedding]));
+    return texts.map((_, i) => {
+      const emb = byIndex.get(i);
+      if (!emb || emb.length === 0) {
+        throw new Error(
+          `Alt embedding returned empty vector at index ${i} for model="${config.llmAltEmbedModel}"`
+        );
+      }
+      return emb;
+    });
+  }
+}
+
 export function createEmbeddingProvider(): EmbeddingProvider {
+  if (config.llmAltEmbedModel) {
+    return new AltEmbeddingProvider();
+  }
   return new OllamaEmbeddingProvider();
 }

@@ -11,4 +11,5 @@ export const config = {
   llmAltBaseUrl: process.env.LLM_ALT_BASE_URL || "",
   llmAltApiKey: process.env.LLM_ALT_API_KEY || "",
   llmAltModel: process.env.LLM_ALT_MODEL || "gpt-4o-mini",
+  llmAltEmbedModel: process.env.LLM_ALT_EMBED_MODEL || "",
 };

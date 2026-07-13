@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import { config } from "./config.js";
 
 async function ollamaChat(prompt: string, system: string): Promise<string> {
+  console.log(`ollamaChat: model="${config.chatModel}"`);
   const resp = await fetch(`${config.ollamaBaseUrl}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -35,6 +36,7 @@ function getAltClient(): OpenAI {
 }
 
 async function altChat(prompt: string, system: string): Promise<string> {
+  console.log(`altChat: model="${config.llmAltModel}"`);
   const client = getAltClient();
   const completion = await client.chat.completions.create({
     model: config.llmAltModel,
