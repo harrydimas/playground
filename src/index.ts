@@ -7,9 +7,9 @@ import { lookupDetails } from "./pipeline/lookup-detail.js";
 import { summarizeResults } from "./pipeline/summarize.js";
 import type { SearchResponse } from "./types.js";
 
-async function handleSearch(queryText: string): Promise<SearchResponse> {
+async function handleSearch(queryText: string, option: number = 1): Promise<SearchResponse> {
   console.log(`Handling search for query: "${queryText}"`);
-  const enriched = await enrichQuery(queryText);
+  const enriched = await enrichQuery(queryText, option);
   const hs_codes = await searchHSCodes(enriched, []);
   const details = await lookupDetails(hs_codes);
   const topDetails = await summarizeResults(queryText, enriched.translated, hs_codes, details);
@@ -23,9 +23,9 @@ async function handleSearch(queryText: string): Promise<SearchResponse> {
   };
 }
 
-async function handleSearchV2(queryText: string): Promise<SearchResponse> {
+async function handleSearchV2(queryText: string, option: number = 1): Promise<SearchResponse> {
   console.log(`Handling search v2 for query: "${queryText}"`);
-  const enriched = await enrichQuery(queryText);
+  const enriched = await enrichQuery(queryText, option);
   const sections = await classifySection(queryText, enriched.translated);
   const hs_codes = await searchHSCodes(enriched, sections);
   const details = await lookupDetails(hs_codes);
@@ -79,6 +79,8 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
       }
       const result = await handleSearchV2(queryText);
       res.end(JSON.stringify(result, null, 2));
+    } else if (req.method === "GET" && req.url === "/hello") {
+      res.end(JSON.stringify({ message: "Hello, World!" }));
     } else if (req.method === "GET" && req.url === "/health") {
       res.end(JSON.stringify({ status: "ok" }));
     } else {
