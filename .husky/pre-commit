@@ -1,1 +1,9 @@
-npm test
+#!/usr/bin/env bash
+# Format staged TypeScript, JSON, CSV, and YAML files before commit
+files=$(git diff --cached --name-only --diff-filter=ACM \
+  | xargs -I {} echo "{}" \
+  | grep -E '\.(ts|js|json|csv|yml|yaml)$' || true)
+
+if [ -n "$files" ]; then
+  npx --no-install prettier --write $files
+fi

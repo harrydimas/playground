@@ -84,7 +84,8 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     } else if (req.method === 'GET' && req.url === '/health') {
       res.end(
         JSON.stringify({
-          status: 'ok',
+          status: 'success',
+          timestamp: new Date().toISOString(),
         })
       );
     } else {
